@@ -73,7 +73,7 @@ class Tweak:
     """
 
     def __init__(self, content, extended_mode=False, verbose=True, show_progress=False,
-                 favside=None, min_volume=False, parameter=None,  progress_callback=None):
+                 favside=None, min_volume=True, parameter=None,  progress_callback=None):
         # Load parameters
         if parameter is None:
             if min_volume:
@@ -571,5 +571,5 @@ class Tweak:
     {:2f}\t{:2f}\t{:2f}""".format(self.matrix[0][0], self.matrix[0][1], self.matrix[0][2],
                                   self.matrix[1][0], self.matrix[1][1], self.matrix[1][2],
                                   self.matrix[2][0], self.matrix[2][1], self.matrix[2][2])
-        response += "\n  Printability: \t{}".format(self.printability)
+        response += "\n  Min volume of surpport Structure: \t{}".format(self.unprintability)
         return response
