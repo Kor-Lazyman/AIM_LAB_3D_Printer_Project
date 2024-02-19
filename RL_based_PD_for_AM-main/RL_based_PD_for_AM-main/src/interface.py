@@ -66,7 +66,8 @@ class Utility():
         return obj
 
     def orientation(self,objs):
-        
+        total_x=0
+        sup_vol={}
         # Start of tweaking.
         if self.result:
             print("Calculating the optimal orientation:\n  {}"
@@ -80,7 +81,7 @@ class Utility():
             info[part] = dict()
             try:
                 cstime = time()
-                x = Tweak(mesh, True, True, False, False, False)
+                x = Tweak(mesh, False, True, False, False, False)
                 info[part]["matrix"] = x.matrix
                 info[part]["tweaker_stats"] = x
                 print(x)
@@ -90,7 +91,8 @@ class Utility():
     
             print("Tweaking took:  \t{:2f} s".format(time() - stime))
             print("Successfully Rotated!")
-        
-        return objs,-x.unprintability
+            total_x=total_x+x.unprintability
+            sup_vol[part]=x.unprintability
+        return objs,-total_x,sup_vol
     
     

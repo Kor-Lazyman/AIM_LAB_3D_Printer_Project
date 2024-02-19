@@ -46,20 +46,21 @@ class MeshProcessor:
         if checked1==True and checked2==True:
              meshes = np.concatenate((meshes_one, meshes_theother))
              #print(meshes)
-             return meshes
-        elif checked1==True :
+             return meshes, True
+        if checked1==True and checked2==False :
             meshes_one=sliced_mesh_one.split()
             if len(meshes_one)== 0:
                 meshes_one = [sliced_mesh_one]
             print("Mesh 2 is broken")
-            return meshes_one
-        elif checked2==True :
+            return meshes_one, False
+        if checked2==True and checked1==False:
             meshes_theother = sliced_mesh_theother.split()
             if len(meshes_theother)== 0:
                 meshes_theother = [sliced_mesh_theother]
 
             print("Mesh 1 is broken")
-            return meshes_theother
+            return meshes_theother, False
+            
         # meshes = meshes_one + meshes_theother
        
        

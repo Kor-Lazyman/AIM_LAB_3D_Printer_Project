@@ -59,23 +59,25 @@ def cap_current_state(PD_tree, decomposed_parts):
 def deter_build_orientation(trimesh_model):
 
     Utility=interface.Utility()
-    build_orientation=Utility.orientation(Utility.create_obj(trimesh_model))
+    build_orientation,reward,sup_vol=Utility.orientation(Utility.create_obj(trimesh_model))
 
     # SET THE CURRENT BUILD ORIENTATION TO THE DEFAULT
 
-    return build_orientation
+    return build_orientation,reward,sup_vol
 
 
 def decompose_parts(ACTION, part_list, PD_tree):
     
     Utility=interface.Utility()
     MeshProcessor=mp.MeshProcessor()
-    Part=part_list[round(ACTION[0])]
-    '''
+    Part=(ACTION[0])
+
+   
+    
     print("==============")
     print(Part)
     print("==============")
-    '''
+    
     for key in PD_tree.keys():
         if key == Part:
             part_volume = PD_tree[key]["Vol"]
@@ -91,9 +93,9 @@ def decompose_parts(ACTION, part_list, PD_tree):
     start_point = [ACTION[1],ACTION[2],ACTION[3]]
     plain_normal=[ACTION[4],ACTION[5],ACTION[6]]
 
-    meshes = MeshProcessor.trimesh_cut(PD_tree[Part]['Mesh'],start_point, plain_normal)
+    meshes,check = MeshProcessor.trimesh_cut(PD_tree[Part]['Mesh'],start_point, plain_normal)
 
-    obj,reward=deter_build_orientation(meshes)
+    obj,reward,sup_vol=deter_build_orientation(meshes)
     
     #Cal Reward
 
@@ -101,11 +103,12 @@ def decompose_parts(ACTION, part_list, PD_tree):
     
     # Remove the decomposed part from the part list
     
-    part_list.remove(Part)
-
-    if len(meshes) > 0:
+    
+    
+    if len(meshes) > 0 and check==True:
         i = 1
         for mesh in meshes:
+            
             print("Mesh{} Validation (Watertight): ".format(i), mesh.is_watertight)
             print("Mesh{} Volume: ".format(i), mesh.volume)
             # mp.processor.pyvista_visualize(mesh)
@@ -118,14 +121,19 @@ def decompose_parts(ACTION, part_list, PD_tree):
             i += 1
 
             # Update the PD tree
-            PD_tree[PartID] = {"Vol": part_volume, "BB": bounding_box,
-                               "Conc": concavity, "SupVol": support_volume,"Mesh":mesh}
+            PD_tree[PartID] = {"Vol": mesh.volume, "BB": mesh.bounding_box.extents,
+                               "Conc": part_volume - mesh.convex_hull.volume, "SupVol": sup_vol[i-2],"Mesh":mesh}
 
             # Update the list of decomposed parts
             part_list.append(PartID)
+        part_list.remove(Part)
+    else:
+        pass
+
     '''
     print(part_list)
     '''
+    
     return PD_tree, part_list,reward
 
 
