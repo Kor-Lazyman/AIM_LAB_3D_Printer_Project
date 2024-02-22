@@ -29,6 +29,7 @@ def create_env():
     concavity = part_volume - processor.mesh.convex_hull.volume
     bounding_box = processor.mesh.bounding_box.extents
     support_volume = 0  # THIS SHOULD BE OBTAINED FROM THE CODE
+    
     '''
     print("Initial model ==== ")
     print("Validation (Watertight): ", processor.mesh.is_watertight)
@@ -40,7 +41,7 @@ def create_env():
     #processor.pyvista_visualize(processor.mesh)
 
     # Create a PD tree
-    PD_tree = {1: {"Vol": part_volume, "BB": bounding_box,
+    PD_tree = {1: {"Vol": part_volume, "BB-X": bounding_box[0],"BB-Y": bounding_box[1],"BB-Z": bounding_box[2],
                      "Conc": concavity, "SupVol": support_volume,"Mesh":processor.mesh}}
 
     # Create a list of decomposed parts
@@ -70,20 +71,17 @@ def decompose_parts(ACTION, part_list, PD_tree):
     
     Utility=interface.Utility()
     MeshProcessor=mp.MeshProcessor()
-    Part=(ACTION[0])
-
-   
-    
-    print("==============")
-    print(Part)
-    print("==============")
+    Part=part_list[round(ACTION[0])]
     
     for key in PD_tree.keys():
         if key == Part:
             part_volume = PD_tree[key]["Vol"]
-            bounding_box = PD_tree[key]["BB"]
+            bb_x = PD_tree[key]["BB-X"]
+            bb_y = PD_tree[key]["BB-Y"]
+            bb_z = PD_tree[key]["BB-Z"]
             concavity = PD_tree[key]["Conc"]
             support_volume = PD_tree[key]["SupVol"]
+    
     # ACTION[0] : PART ID of the part to be decomposed
     # ACTION[1] : CUTTING PLANE COORDINATE & ANGLE
     '''        
@@ -113,16 +111,11 @@ def decompose_parts(ACTION, part_list, PD_tree):
             print("Mesh{} Volume: ".format(i), mesh.volume)
             # mp.processor.pyvista_visualize(mesh)
             PartID = Part*10+i
-            print(PartID)
-            '''
-            mp.processor.export_mesh_as_stl(mesh, os.path.join(
-                export_dir, PartID, '.stl'))
-            '''
             i += 1
 
             # Update the PD tree
-            PD_tree[PartID] = {"Vol": mesh.volume, "BB": mesh.bounding_box.extents,
-                               "Conc": part_volume - mesh.convex_hull.volume, "SupVol": sup_vol[i-2],"Mesh":mesh}
+            PD_tree[PartID] = {"Vol": mesh.volume, "BB-X":mesh.bounding_box.extents[0],"BB-Y": mesh.bounding_box.extents[1],"BB-Z": mesh.bounding_box.extents[2],
+                               "Conc": mesh.volume - mesh.convex_hull.volume, "SupVol":sup_vol[i-2],"Mesh":mesh}
 
             # Update the list of decomposed parts
             part_list.append(PartID)
@@ -130,9 +123,6 @@ def decompose_parts(ACTION, part_list, PD_tree):
     else:
         pass
 
-    '''
-    print(part_list)
-    '''
     
     return PD_tree, part_list,reward
 

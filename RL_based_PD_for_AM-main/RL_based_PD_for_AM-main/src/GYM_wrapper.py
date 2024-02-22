@@ -31,7 +31,7 @@ class GymInterface(gym.Env):
         # Initialize the PD environment
         self.PD_tree, self.decomposed_parts = env.create_env()
 
-        self.observation_space = spaces.Box(low=0, high=np.inf,shape=(1,), dtype=np.float32)
+        self.define_state()
     
         self.x=self.PD_tree[1]["Mesh"].vertices[:,0]
         self.y=self.PD_tree[1]["Mesh"].vertices[:,1]
@@ -41,14 +41,13 @@ class GymInterface(gym.Env):
         self.total_reward = 0
         self.num_episode = 1
 
-        self.max_part=1
-        self.current_observation=1
+
 
         self.define_action_space()
 
     def define_action_space(self):
         self.action_space_low = np.concatenate([
-            [self.max_part],
+            [0],
             [np.min(self.x, axis=0)],
             [np.min( self.y, axis=0)],
             [np.min( self.z, axis=0)],
@@ -57,7 +56,7 @@ class GymInterface(gym.Env):
             [np.min( self.z, axis=0)],
         ])
         self.action_space_high = np.concatenate([
-            [self.max_part],
+            [len(self.decomposed_parts)-1],
             [np.max( self.x, axis=0)],
             [np.max( self.y, axis=0)],
             [np.max( self.z, axis=0)],
@@ -67,35 +66,59 @@ class GymInterface(gym.Env):
         ])
         self.action_space = spaces.Box(low=self.action_space_low, high=self.action_space_high, shape=(7,),dtype=np.float32)
 
+    def define_state(self):
+
+        self.observation_space=spaces.Dict()
+        for part in self.decomposed_parts:
+            for key in self.PD_tree[part].keys():
+                if key!='Mesh':
+                    if key=="BB":
+                        self.observation_space[f"Part{key}-X"]=spaces.Box(low=-np.inf, high=np.inf, shape=(1,),dtype=np.float32)
+                        self.observation_space[f"Part{key}-Y"]=spaces.Box(low=-np.inf, high=np.inf, shape=(1,),dtype=np.float32)
+                        self.observation_space[f"Part{key}-Z"]=spaces.Box(low=-np.inf, high=np.inf, shape=(1,),dtype=np.float32)
+                    else:
+                        self.observation_space[f"Part{key}"]=spaces.Box(low=-np.inf, high=np.inf, shape=(1,),dtype=np.float32)
+
+        self.current_observation={}
+        for part in self.decomposed_parts:
+            
+            for key in self.PD_tree[part].keys():
+                if key!='Mesh':
+                    if key=="BB":
+                        self.current_observation[f"Part{key}-X"]=np.array([self.PD_tree[part][key][0]])
+                        self.current_observation[f"Part{key}-Y"]=np.array([self.PD_tree[part][key][1]])
+                        self.current_observation[f"Part{key}-Z"]=np.array([self.PD_tree[part][key][2]])
+                    else:
+                        self.current_observation[f"Part{key}"]=np.array([self.PD_tree[part][key]])
+        
+
+
+
     def reset(self):
-        self.max_part=1
         # Initialize the PD environment
         print("\nEpisode: ", self.num_episode)
         self.PD_tree, self.decomposed_parts = env.create_env()
         self.define_action_space()
-        self.current_observation=self.return_state()
-        return np.array([self.current_observation])
+        self.define_state()
+        return self.current_observation
 
     def step(self, action):
-        action[0]=self.max_part
         done=False
         # Update the action of the agent
         self.PD_tree, self.decomposed_parts,reward = env.decompose_parts(
             action, self.decomposed_parts,self.PD_tree)
-        print("====================")
-        print(self.decomposed_parts)
-        print(self.PD_tree.keys())
-        print("====================")
+ 
         # Capture the next state of the environment
         # Calculate the reward
         self.define_action_space()
-        self.total_reward += reward
+        
         # 한 에피소드 종료 조건
-        if MAX_N_PARTS < len(self.decomposed_parts):
+        if MAX_N_PARTS < len(self.decomposed_parts) or reward==0:
             done = True
+        reward=reward*len(self.decomposed_parts)
         if done == True:
             print("Total reward: ", self.total_reward)
-            self.total_reward_over_episode.append(self.total_reward)
+            self.total_reward_over_episode.append(reward)
             self.total_reward = 0
             self.num_episode += 1
             
@@ -105,7 +128,7 @@ class GymInterface(gym.Env):
 
         info = {}  # 추가 정보 (필요에 따라 사용)
         
-        return  self.return_state(), reward, done, info
+        return  self.current_observation, reward, done, info
 
     def render(self, mode='human'):
         pass
@@ -121,13 +144,3 @@ class GymInterface(gym.Env):
         # 필요한 경우, 여기서 리소스를 정리
         pass
 
-    def return_state(self):
-        max_sup=0
-        
-        for part in self.decomposed_parts:
-            temp=self.PD_tree[part]["SupVol"]
-            if max_sup<temp:
-                max_sup=temp
-                self.max_part=part
-        next_state=self.max_part
-        return next_state

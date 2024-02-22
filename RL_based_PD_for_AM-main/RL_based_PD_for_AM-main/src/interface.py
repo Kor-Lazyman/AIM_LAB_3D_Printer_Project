@@ -93,6 +93,6 @@ class Utility():
             print("Successfully Rotated!")
             total_x=total_x+x.unprintability
             sup_vol[part]=x.unprintability
-        return objs,-total_x,sup_vol
+        return objs,total_x,sup_vol
     
     
