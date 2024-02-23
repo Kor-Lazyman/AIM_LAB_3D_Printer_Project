@@ -1,7 +1,9 @@
 N_EPISODES = 1
 N_EVAL_EPISODES = 1
 MAX_N_PARTS = 5
+GAMMA1=0.1#GAMMA for Return
 
+EXTENDED=True
 # Set low and high values for the actions of the center coordination (X, Y, Z)
 ACTION_SPACE_CENTER_COOR_LOW = 0  # unit: mm
 ACTION_SPACE_CENTER_COOR_HIGH = 200  # unit: mm

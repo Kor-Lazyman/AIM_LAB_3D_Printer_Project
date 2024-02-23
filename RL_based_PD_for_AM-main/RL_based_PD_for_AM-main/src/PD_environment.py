@@ -60,12 +60,12 @@ def cap_current_state(PD_tree, decomposed_parts):
 def deter_build_orientation(trimesh_model):
 
     Utility=interface.Utility()
-    build_orientation,reward,sup_vol=Utility.orientation(Utility.create_obj(trimesh_model))
+    build_orientation,sup_vol=Utility.orientation(Utility.create_obj(trimesh_model))
 
     # SET THE CURRENT BUILD ORIENTATION TO THE DEFAULT
 
-    return build_orientation,reward,sup_vol
-
+    return build_orientation,sup_vol
+ 
 
 def decompose_parts(ACTION, part_list, PD_tree):
     
@@ -93,12 +93,12 @@ def decompose_parts(ACTION, part_list, PD_tree):
 
     meshes,check = MeshProcessor.trimesh_cut(PD_tree[Part]['Mesh'],start_point, plain_normal)
 
-    obj,reward,sup_vol=deter_build_orientation(meshes)
+    obj,sup_vol=deter_build_orientation(meshes)
     
     #Cal Reward
 
     meshes=Utility.create_trimesh(obj)
-    
+     
     # Remove the decomposed part from the part list
     
     
@@ -120,10 +120,18 @@ def decompose_parts(ACTION, part_list, PD_tree):
             # Update the list of decomposed parts
             part_list.append(PartID)
         part_list.remove(Part)
+
     else:
         pass
+    reward=0
+    for part in part_list:
+        reward=reward+PD_tree[part]["SupVol"]
+        print(f"{part}:{PD_tree[part]["SupVol"]}")
 
-    
+    print("=================")
+    print("Sum of SupVol:",reward)
+    print("=================")
+
     return PD_tree, part_list,reward
 
 

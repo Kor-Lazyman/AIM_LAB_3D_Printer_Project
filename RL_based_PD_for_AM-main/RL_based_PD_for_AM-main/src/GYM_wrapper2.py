@@ -104,8 +104,8 @@ class GymInterface(gym.Env):
                 done = True
 
             # Calculate the reward
-            reward=reward/len(self.decomposed_parts)
-            self.total_reward=self.total_reward+reward
+            reward=-(GAMMA1*self.total_reward*len(self.decomposed_parts)+reward)
+            self.total_reward=reward
             if done == True:
                 print("Total reward: ", self.total_reward)
                 self.total_reward_over_episode.append(self.total_reward)

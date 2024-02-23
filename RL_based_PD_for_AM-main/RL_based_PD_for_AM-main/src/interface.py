@@ -6,7 +6,7 @@ from MeshTweaker import Tweak
 import FileHandler
 import numpy as np
 import trimesh
-
+from config import *
 class Utility():
     def __init__(self):
         self.test_start='Ori' # Ori means using Tweaker first, Tri means using Trimesh first
@@ -81,7 +81,7 @@ class Utility():
             info[part] = dict()
             try:
                 cstime = time()
-                x = Tweak(mesh, False, True, False, False, False)
+                x = Tweak(mesh, EXTENDED, True, False, False, False)
                 info[part]["matrix"] = x.matrix
                 info[part]["tweaker_stats"] = x
                 print(x)
@@ -91,8 +91,8 @@ class Utility():
     
             print("Tweaking took:  \t{:2f} s".format(time() - stime))
             print("Successfully Rotated!")
-            total_x=total_x+x.unprintability
-            sup_vol[part]=x.unprintability
-        return objs,total_x,sup_vol
+            sup_vol[part]=x.overhang
+            print(x.overhang)
+        return objs,sup_vol
     
     
