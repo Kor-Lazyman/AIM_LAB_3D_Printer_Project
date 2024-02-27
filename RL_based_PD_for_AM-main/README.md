@@ -1,6 +1,6 @@
 # RL-based-PD-for-AM
 주요 라이브러리 :
-gym: 시뮬레이션 환경, 설치법:pip install gym
+gym: 시뮬레이션 환경, 설치법:pip install gym <"br/">
 sb3: gym환경 기반의 심층강화학습 라이브러리, 설치법: pip install stable-baselines3
 Trimesh: 3D모델을 자르는 기능을 제공하는 라이브러리, 설치법 pip install trimesh
 tensorboard: 학습의 경과를 보여주는 시각화 툴, 설치법: pip install tensorboard
