@@ -13,7 +13,7 @@ config.py 강화학습에 필요한 데이터가 담겨져 있는 파일
 
 config 파일 내 변수
 
-N_EPISODES: 학습 반복수(너무 작을시 2048회로 설정)
+N_EPISODES: 총 절삭 횟수(너무 작을시 2048회로 설정)
 
 N_EVAL_EPISODES: 평가 반복수
 
